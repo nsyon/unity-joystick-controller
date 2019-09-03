@@ -8,9 +8,12 @@ public class Cannon : MonoBehaviour
     public float moveSpeed = 0.01f;
     public float drag = 0.5f;
     public float terminalRotationSpeed = 25.0f;
+    public GameObject bullet;
+    public GameObject spawnPoint;
 
     private Rigidbody controller;
     private Transform camTransform;
+    private Vector3 lastDir;
 
     // Start is called before the first frame update
     void Start()
@@ -18,7 +21,7 @@ public class Cannon : MonoBehaviour
         controller = GetComponent<Rigidbody>();
         controller.maxAngularVelocity = terminalRotationSpeed;
         controller.drag = drag;
-
+        lastDir = Vector3.zero;
         camTransform = Camera.main.transform;
     }
 
@@ -26,6 +29,7 @@ public class Cannon : MonoBehaviour
     void Update()
     {
         Vector3 dir = Vector3.zero;
+        
         dir.x = Input.GetAxis("Horizontal");
         dir.z = Input.GetAxis("Vertical");
 
@@ -38,7 +42,7 @@ public class Cannon : MonoBehaviour
             Vector3 rotatedDir = camTransform.TransformDirection(dir);
             rotatedDir = new Vector3(rotatedDir.x, 0, rotatedDir.z);
             rotatedDir = rotatedDir.normalized * dir.magnitude;
-
+            lastDir = rotatedDir;
 
             float angle = Mathf.Atan2(dir.z, dir.x);
 
@@ -50,5 +54,19 @@ public class Cannon : MonoBehaviour
             controller.transform.rotation = rotation;
             controller.transform.position += rotatedDir * moveSpeed * Time.deltaTime;
         }
+        if (Input.GetKeyDown(KeyCode.F))
+        {
+            Fire();
+        }
+    }
+    public void Fire()
+    {
+        Debug.Log("Fire!");
+        Vector3 fireDirection = new Vector3(lastDir.x, 0, lastDir.z);
+        Vector3 firePosition = spawnPoint.transform.position;
+
+        GameObject b = Instantiate(bullet, spawnPoint.transform.position, spawnPoint.transform.rotation); 
+
+        b.GetComponent<Rigidbody>().AddForce(fireDirection * 40);
     }
 }
